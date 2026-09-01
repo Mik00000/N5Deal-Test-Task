@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { AssetStatus } from "@prisma/client";
 
 export async function GET(request: NextRequest) {
   try {
@@ -7,9 +8,14 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get("search") || "";
     const sector = searchParams.get("sector") || "";
     const geography = searchParams.get("geography") || "";
+    const sellerId = searchParams.get("sellerId") || "";
     const sortBy = searchParams.get("sortBy") || "newest";
 
     const whereClause: any = {};
+
+    if (sellerId) {
+      whereClause.sellerId = sellerId;
+    }
 
     if (sector && sector !== "ALL") {
       whereClause.sector = sector;
@@ -53,6 +59,9 @@ export async function GET(request: NextRequest) {
             company: true,
           },
         },
+        _count: {
+          select: { inquiries: true },
+        },
       },
     });
 
@@ -60,5 +69,63 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("Error fetching assets:", error);
     return NextResponse.json({ error: "Failed to fetch assets" }, { status: 500 });
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const {
+      title,
+      codeName,
+      sector,
+      geography,
+      revenue,
+      revenueNum,
+      ebitda,
+      askingPrice,
+      askingPriceNum,
+      teaser,
+      highlights,
+      sellerId,
+      status,
+    } = body;
+
+    if (!title || !sector || !sellerId || !askingPrice) {
+      return NextResponse.json(
+        { error: "Missing required fields (title, sector, sellerId, askingPrice)" },
+        { status: 400 }
+      );
+    }
+
+    // Generate unique codeName if not provided
+    const generatedCodeName =
+      codeName || `Project ${sector.replace(/[^a-zA-Z]/g, "")}-${Math.floor(100 + Math.random() * 900)}`;
+
+    const parsedPriceNum = askingPriceNum || parseFloat(askingPrice.replace(/[^0-9.]/g, "")) * 1000000 || 10000000;
+    const parsedRevNum = revenueNum || parseFloat((revenue || "").replace(/[^0-9.]/g, "")) * 1000000 || 2000000;
+
+    const asset = await prisma.asset.create({
+      data: {
+        title,
+        codeName: generatedCodeName,
+        sector,
+        geography: geography || "Pan-European",
+        revenue: revenue || "€2.5M ARR",
+        revenueNum: parsedRevNum,
+        ebitda: ebitda || "€0.8M (25% margin)",
+        askingPrice,
+        askingPriceNum: parsedPriceNum,
+        status: status ? (status as AssetStatus) : AssetStatus.ACTIVE,
+        teaser: teaser || `${title} - Verified fintech M&A opportunity.`,
+        highlights: highlights || "Enterprise Clients | Fully Licensed | High Growth",
+        sellerId,
+      },
+    });
+
+    return NextResponse.json(asset, { status: 201 });
+  } catch (error) {
+    console.error("Error creating asset:", error);
+    return NextResponse.json({ error: "Failed to create asset" }, { status: 500 });
   }
 }
