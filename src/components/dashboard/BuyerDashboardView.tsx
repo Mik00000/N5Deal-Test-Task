@@ -11,7 +11,6 @@ import {
   TrendingUp,
   ShieldCheck,
   CheckCircle2,
-  Lock,
   Globe,
   DollarSign,
   FileText,
@@ -103,11 +102,19 @@ export default function BuyerDashboardView() {
     fetchAssets();
   }, [searchQuery, selectedSector, selectedGeography, sortBy]);
 
-  // AI Match filtering: filters to preferred sectors (Payments, WealthTech, RegTech)
+  // AI Heuristic Matcher: matches buyer target sectors (Payments, WealthTech, RegTech)
+  const isAiMatched = (sector: string) =>
+    ["Payments", "WealthTech", "RegTech"].includes(sector);
+
+  const getAiScore = (sector: string) => {
+    if (sector === "Payments") return "98%";
+    if (sector === "WealthTech") return "94%";
+    if (sector === "RegTech") return "91%";
+    return "82%";
+  };
+
   const displayedAssets = aiMatchActive
-    ? assets.filter((a) =>
-        ["Payments", "WealthTech", "RegTech"].includes(a.sector)
-      )
+    ? assets.filter((a) => isAiMatched(a.sector))
     : assets;
 
   // Country Flag Helper
@@ -141,7 +148,6 @@ export default function BuyerDashboardView() {
       if (res.ok) {
         setInquirySuccess(true);
         setInquiryNotes("");
-        // Refresh assets list to update inquiryCount
         fetchAssets();
       }
     } catch (err) {
@@ -152,10 +158,10 @@ export default function BuyerDashboardView() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 font-sans">
       {/* 1. Top KPI Cards (Simple, text-only per CONTEXT.md) */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="border-slate-200/80 shadow-xs bg-white hover:border-slate-300 transition-all rounded-xl">
+        <Card className="border border-slate-200/80 shadow-xs bg-white hover:border-slate-300 transition-all rounded-xl">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
               Investment Interests
@@ -170,7 +176,7 @@ export default function BuyerDashboardView() {
           </CardContent>
         </Card>
 
-        <Card className="border-slate-200/80 shadow-xs bg-white hover:border-slate-300 transition-all rounded-xl">
+        <Card className="border border-slate-200/80 shadow-xs bg-white hover:border-slate-300 transition-all rounded-xl">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
               Active Inquiries
@@ -185,7 +191,7 @@ export default function BuyerDashboardView() {
           </CardContent>
         </Card>
 
-        <Card className="border-slate-200/80 shadow-xs bg-white hover:border-slate-300 transition-all rounded-xl">
+        <Card className="border border-slate-200/80 shadow-xs bg-white hover:border-slate-300 transition-all rounded-xl">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
               NDAs Signed
@@ -200,7 +206,7 @@ export default function BuyerDashboardView() {
           </CardContent>
         </Card>
 
-        <Card className="border-slate-200/80 shadow-xs bg-white hover:border-slate-300 transition-all rounded-xl">
+        <Card className="border border-slate-200/80 shadow-xs bg-white hover:border-slate-300 transition-all rounded-xl">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
               Target Deal Range
@@ -232,7 +238,7 @@ export default function BuyerDashboardView() {
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -249,7 +255,7 @@ export default function BuyerDashboardView() {
             }`}
           >
             <Sparkles className={`w-3.5 h-3.5 ${aiMatchActive ? "text-amber-300 animate-pulse" : "text-blue-600"}`} />
-            {aiMatchActive ? "AI Matching Active" : "AI Mandate Match"}
+            {aiMatchActive ? "AI Match: Active" : "AI Mandate Match"}
           </Button>
         </div>
 
@@ -261,7 +267,6 @@ export default function BuyerDashboardView() {
               Filters:
             </div>
 
-            {/* Category Select */}
             <select
               value={selectedSector}
               onChange={(e) => setSelectedSector(e.target.value)}
@@ -275,7 +280,6 @@ export default function BuyerDashboardView() {
               <option value="Crypto & Digital Assets">Crypto & Digital Assets</option>
             </select>
 
-            {/* Geography Select */}
             <select
               value={selectedGeography}
               onChange={(e) => setSelectedGeography(e.target.value)}
@@ -290,7 +294,6 @@ export default function BuyerDashboardView() {
             </select>
           </div>
 
-          {/* Sorting Select */}
           <div className="flex items-center gap-2">
             <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
             <select
@@ -314,14 +317,14 @@ export default function BuyerDashboardView() {
           <div className="flex items-center gap-2.5">
             <Sparkles className="w-4 h-4 text-blue-600 shrink-0" />
             <span className="text-xs font-semibold text-blue-900">
-              AI Matching Enabled: Showing target opportunities aligned with {currentUser?.company}&apos;s investment criteria.
+              AI Match Engine Active: Showing assets matching {currentUser?.company}&apos;s investment thesis (PayTech, WealthTech & RegTech).
             </span>
           </div>
           <button
             onClick={() => setAiMatchActive(false)}
             className="text-xs font-semibold text-blue-700 hover:text-blue-900 underline cursor-pointer"
           >
-            Clear Filter
+            Show All
           </button>
         </div>
       )}
@@ -355,119 +358,134 @@ export default function BuyerDashboardView() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {displayedAssets.map((asset) => (
-            <Card
-              key={asset.id}
-              className="border border-slate-200/80 shadow-xs bg-white hover:shadow-md hover:border-slate-300 transition-all rounded-xl flex flex-col justify-between overflow-hidden group"
-            >
-              {/* Card Header */}
-              <div className="p-5 pb-4 space-y-3 border-b border-slate-100">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-base" role="img" aria-label="country">
-                      {getFlag(asset.geography)}
-                    </span>
-                    <span className="text-xs font-mono font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded">
-                      {asset.codeName}
-                    </span>
-                  </div>
-                  <Badge
-                    variant="outline"
-                    className={`text-[11px] font-semibold px-2 py-0.5 ${
-                      asset.status === "ACTIVE"
-                        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                        : "bg-amber-50 text-amber-700 border-amber-200"
-                    }`}
-                  >
-                    {asset.status === "ACTIVE" ? "Live Mandate" : "Under LOI"}
-                  </Badge>
-                </div>
+          {displayedAssets.map((asset) => {
+            const isMatched = isAiMatched(asset.sector);
+            const score = getAiScore(asset.sector);
 
-                <h3 className="text-base font-bold text-slate-900 leading-snug group-hover:text-blue-600 transition-colors line-clamp-2">
-                  {asset.title}
-                </h3>
-
-                <div className="flex items-center gap-2 flex-wrap text-xs text-slate-500">
-                  <span className="font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded">
-                    {asset.sector}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Globe className="w-3 h-3 text-slate-400" />
-                    {asset.geography}
-                  </span>
-                </div>
-              </div>
-
-              {/* Financial Metrics Box */}
-              <CardContent className="p-5 pt-4 space-y-4 flex-1">
-                <div className="grid grid-cols-3 gap-2 bg-slate-50/80 p-3 rounded-lg border border-slate-200/60 text-center">
-                  <div>
-                    <span className="text-[10px] font-semibold text-slate-400 uppercase block">
-                      Valuation
-                    </span>
-                    <span className="text-sm font-extrabold text-blue-600">
-                      {asset.askingPrice}
-                    </span>
-                  </div>
-                  <div className="border-x border-slate-200/60 px-1">
-                    <span className="text-[10px] font-semibold text-slate-400 uppercase block">
-                      ARR Revenue
-                    </span>
-                    <span className="text-xs font-bold text-slate-900">
-                      {asset.revenue}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-semibold text-slate-400 uppercase block">
-                      EBITDA
-                    </span>
-                    <span className="text-xs font-bold text-slate-700">
-                      {asset.ebitda.split(" ")[0]}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Highlights Tags */}
-                <div className="space-y-1.5">
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block">
-                    Key Features & Credentials
-                  </span>
-                  <div className="flex flex-wrap gap-1.5">
-                    {asset.highlights.split(" | ").slice(0, 3).map((h, i) => (
-                      <span
-                        key={i}
-                        className="text-[11px] bg-slate-100/90 border border-slate-200 text-slate-600 px-2 py-0.5 rounded-md font-medium"
-                      >
-                        {h}
+            return (
+              <Card
+                key={asset.id}
+                className={`border shadow-xs bg-white hover:shadow-md hover:border-slate-300 transition-all rounded-xl flex flex-col justify-between overflow-hidden group ${
+                  aiMatchActive && isMatched ? "border-blue-300 ring-1 ring-blue-500/20" : "border-slate-200/80"
+                }`}
+              >
+                {/* Card Header */}
+                <div className="p-5 pb-4 space-y-3 border-b border-slate-100">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-base" role="img" aria-label="country">
+                        {getFlag(asset.geography)}
                       </span>
-                    ))}
+                      <span className="text-xs font-mono font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded">
+                        {asset.codeName}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      {isMatched && (
+                        <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-200 text-[10px] font-bold px-2 py-0.5">
+                          ✨ {score} Match
+                        </Badge>
+                      )}
+                      <Badge
+                        variant="outline"
+                        className={`text-[11px] font-semibold px-2 py-0.5 ${
+                          asset.status === "ACTIVE"
+                            ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                            : "bg-amber-50 text-amber-700 border-amber-200"
+                        }`}
+                      >
+                        {asset.status === "ACTIVE" ? "Live Mandate" : "Under LOI"}
+                      </Badge>
+                    </div>
+                  </div>
+
+                  <h3 className="text-base font-bold text-slate-900 leading-snug group-hover:text-blue-600 transition-colors line-clamp-2">
+                    {asset.title}
+                  </h3>
+
+                  <div className="flex items-center gap-2 flex-wrap text-xs text-slate-500">
+                    <span className="font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded">
+                      {asset.sector}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Globe className="w-3 h-3 text-slate-400" />
+                      {asset.geography}
+                    </span>
                   </div>
                 </div>
 
-                {/* Teaser Description Snippet */}
-                <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
-                  {asset.teaser}
-                </p>
-              </CardContent>
+                {/* Financial Metrics Box */}
+                <CardContent className="p-5 pt-4 space-y-4 flex-1">
+                  <div className="grid grid-cols-3 gap-2 bg-slate-50/80 p-3 rounded-lg border border-slate-200/60 text-center">
+                    <div>
+                      <span className="text-[10px] font-semibold text-slate-400 uppercase block">
+                        Valuation
+                      </span>
+                      <span className="text-sm font-extrabold text-blue-600">
+                        {asset.askingPrice}
+                      </span>
+                    </div>
+                    <div className="border-x border-slate-200/60 px-1">
+                      <span className="text-[10px] font-semibold text-slate-400 uppercase block">
+                        ARR Revenue
+                      </span>
+                      <span className="text-xs font-bold text-slate-900">
+                        {asset.revenue}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-semibold text-slate-400 uppercase block">
+                        EBITDA
+                      </span>
+                      <span className="text-xs font-bold text-slate-700">
+                        {asset.ebitda.split(" ")[0]}
+                      </span>
+                    </div>
+                  </div>
 
-              {/* Card Footer Action */}
-              <div className="p-4 bg-slate-50/50 border-t border-slate-100 flex items-center justify-between">
-                <span className="text-[11px] font-medium text-slate-400">
-                  {asset.inquiryCount} active inquiries
-                </span>
-                <Button
-                  onClick={() => {
-                    setSelectedAsset(asset);
-                    setInquirySuccess(false);
-                  }}
-                  size="sm"
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-lg shadow-xs cursor-pointer"
-                >
-                  View Details & Contact
-                </Button>
-              </div>
-            </Card>
-          ))}
+                  {/* Highlights Tags */}
+                  <div className="space-y-1.5">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block">
+                      Key Features & Credentials
+                    </span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {asset.highlights.split(" | ").slice(0, 3).map((h, i) => (
+                        <span
+                          key={i}
+                          className="text-[11px] bg-slate-100/90 border border-slate-200 text-slate-600 px-2 py-0.5 rounded-md font-medium"
+                        >
+                          {h}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Teaser Description Snippet */}
+                  <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
+                    {asset.teaser}
+                  </p>
+                </CardContent>
+
+                {/* Card Footer Action */}
+                <div className="p-4 bg-slate-50/50 border-t border-slate-100 flex items-center justify-between">
+                  <span className="text-[11px] font-medium text-slate-400">
+                    {asset.inquiryCount} active inquiries
+                  </span>
+                  <Button
+                    onClick={() => {
+                      setSelectedAsset(asset);
+                      setInquirySuccess(false);
+                    }}
+                    size="sm"
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-lg shadow-xs cursor-pointer"
+                  >
+                    View Details & Contact
+                  </Button>
+                </div>
+              </Card>
+            );
+          })}
         </div>
       )}
 
@@ -476,7 +494,6 @@ export default function BuyerDashboardView() {
         <DialogContent className="max-w-2xl bg-white p-6 rounded-2xl shadow-xl border border-slate-200">
           {selectedAsset && (
             <div className="space-y-6">
-              {/* Modal Header */}
               <DialogHeader className="space-y-2 pb-3 border-b border-slate-100">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -501,7 +518,6 @@ export default function BuyerDashboardView() {
                 </DialogDescription>
               </DialogHeader>
 
-              {/* Financial Recap Table */}
               <div className="grid grid-cols-3 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200/80 text-center">
                 <div>
                   <span className="text-xs font-semibold text-slate-400 uppercase block">Asking Valuation</span>
@@ -517,7 +533,6 @@ export default function BuyerDashboardView() {
                 </div>
               </div>
 
-              {/* Teaser & Highlights */}
               <div className="space-y-3">
                 <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wide">Investment Teaser</h4>
                 <p className="text-xs text-slate-600 leading-relaxed bg-slate-50/50 p-3.5 rounded-lg border border-slate-200/60">
@@ -535,7 +550,6 @@ export default function BuyerDashboardView() {
                 </div>
               </div>
 
-              {/* Inquiry Submission Form */}
               <div className="pt-4 border-t border-slate-100 space-y-3">
                 <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wide flex items-center gap-1.5">
                   <FileText className="w-4 h-4 text-blue-600" />

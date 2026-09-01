@@ -1,36 +1,74 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# N5Deal — B2B Fintech M&A Platform Prototype
 
-## Getting Started
+A modern, high-performance **B2B Fintech M&A Dashboard MVP Prototype** supporting three key market perspectives: **Buyer**, **Seller**, and **Platform Manager**.
 
-First, run the development server:
+Built according to the exact specifications in `CONTEXT.md` with strict Light Mode corporate styling, data-driven typography, and zero heavy SVG data visualization dependencies.
 
+---
+
+## 🚀 Quick Start / Launch Instructions
+
+### Prerequisites
+- Node.js 18.x or higher
+- npm 9.x or higher
+
+### 1. Clone & Install Dependencies
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <repository-url>
+cd N5Deal-Test-Task
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Database Migration & Seeding
+Set up the local SQLite database (`dev.db`) and seed it with mock buyers, sellers, platform managers, and active M&A mandates:
+```bash
+npx prisma db push
+npx prisma db seed
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 3. Launch Development Server
+```bash
+npm run dev
+```
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 🛠️ Key Technical Architecture & Decisions
 
-To learn more about Next.js, take a look at the following resources:
+1. **Framework & Language**: Next.js 16 (App Router) with TypeScript for end-to-end type safety.
+2. **Database & ORM**: **Prisma ORM** with **SQLite** (`dev.db`). Lightweight, zero-config relational storage perfect for rapid prototyping and local testing.
+3. **UI System & Typography**:
+   - **Tailwind CSS v4** + **shadcn/ui** (Base UI primitives).
+   - **Google Inter Font**: Applied globally via `next/font/google` for a sleek corporate aesthetic.
+4. **State Management & Persistence**:
+   - Custom `RoleContext` managing switching between `BUYER`, `SELLER`, and `PLATFORM_MANAGER` roles.
+   - Syncs active perspective to `localStorage` (`n5deal_active_role`) and URL search query parameters (`?role=...`).
+5. **Server Actions & API Routes**:
+   - `toggleUserStatusAction`: Next.js Server Action toggling user account status (`ACTIVE` <-> `INACTIVE`) in the SQLite database.
+   - `/api/assets` & `/api/inquiries`: RESTful API routes handling asset filtering, new mandate publishing, and NDA/inquiry submission.
+6. **Strict Scope-Reduction Compliance**:
+   - **Platform Manager Dashboard**: 100% full-width layout (right-side Activity Log and Progress Bars removed per `CONTEXT.md`).
+   - **Seller Dashboard**: Inquiries column displays **plain text numbers ONLY** (e.g. `14`, `7`, `21`) without sparklines.
+   - **Buyer Dashboard**: Simple text-only KPI stat cards and data-heavy text Asset Cards (no stock photos or SVGs).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🤖 AI Tools Used
 
-## Deploy on Vercel
+- **Antigravity AI Coding Assistant**: Used for pair-programming, scaffolding Next.js App Router structure, writing Prisma schema models, generating seed data, and validating browser interaction state via subagents.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🔮 Future Improvements (With More Time)
+
+1. **Authentication & Access Control**: Integrate NextAuth.js / Auth.js with OAuth or magic links to replace the prototype role-switcher with real session-based security.
+2. **True LLM Integration**: Connect OpenAI/Anthropic API for automated acquisition thesis matching, AI deal summary generation, and intelligent VDR document indexing.
+3. **Robust Data Validation**: Implement Zod schemas on both client forms and server endpoints.
+4. **Virtual Data Room (VDR)**: Add encrypted file uploading (S3/Cloudflare R2) with granular permissions for NDA signers.
+
+---
+
+## 📄 License
+
+MIT
