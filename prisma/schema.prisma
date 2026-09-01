@@ -1,0 +1,98 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  PLATFORM_MANAGER
+  SELLER
+  BUYER
+}
+
+enum UserStatus {
+  ACTIVE
+  PENDING
+  INACTIVE
+}
+
+enum AssetStatus {
+  ACTIVE
+  UNDER_LOI
+  DRAFT
+  CLOSED
+}
+
+enum InquiryStatus {
+  NEW_INQUIRY
+  NDA_SIGNED
+  DATA_ROOM_ACCESS
+  LOI_SUBMITTED
+  PASSED
+}
+
+model User {
+  id        String     @id @default(uuid())
+  name      String
+  email     String     @unique
+  role      Role       @default(BUYER)
+  company   String
+  status    UserStatus @default(ACTIVE)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  // Seller relations
+  assets Asset[] @relation("SellerAssets")
+
+  // Buyer relations
+  inquiries Inquiry[]
+
+  @@map("users")
+}
+
+model Asset {
+  id             String      @id @default(uuid())
+  title          String
+  codeName       String      @unique
+  sector         String
+  geography      String
+  revenue        String
+  revenueNum     Float
+  ebitda         String
+  askingPrice    String
+  askingPriceNum Float
+  status         AssetStatus @default(ACTIVE)
+  inquiryCount   Int         @default(0)
+  teaser         String
+  highlights     String
+
+  sellerId  String
+  seller    User     @relation("SellerAssets", fields: [sellerId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  inquiries Inquiry[]
+
+  @@map("assets")
+}
+
+model Inquiry {
+  id        String        @id @default(uuid())
+  assetId   String
+  asset     Asset         @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  buyerId   String
+  buyer     User          @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  status    InquiryStatus @default(NEW_INQUIRY)
+  notes     String?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@unique([assetId, buyerId])
+  @@map("inquiries")
+}
