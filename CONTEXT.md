@@ -15,7 +15,7 @@ SCREEN 3: BUYER DASHBOARD
 The goal is to maintain the premium corporate look while ensuring every component can be easily built with standard shadcn/ui tables and cards without custom SVG data visualizations.
 
 
-
+DESIGN LINK: https://app.banani.co/flow/NdCCNx4lopSY
 ## UI/UX Exclusions (Strict Rules for Speed)
 When implementing the visual dashboards from any reference images, strictly apply these simplifications:
 - **Platform Manager Dashboard:** DO NOT build the right sidebar ("Recent Activity" and "Platform Health"). The "User Management" table must take 100% width.
