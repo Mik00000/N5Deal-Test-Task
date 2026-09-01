@@ -73,6 +73,14 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
+## 💡 Key Product & Architectural Assumptions
+
+1. **Role-Based Context vs Auth**: To maximize user flow evaluation within the 24h timeframe, authentication is simulated via an interactive TopNav Role Switcher (`RoleContext`) rather than a gated login screen.
+2. **Relational Data Persistence**: SQLite was chosen to allow local and Vercel build-time seeding (`prisma db push && prisma db seed`), ensuring reviewers get live, persistent DB state without configuring external credentials.
+3. **Confidential Deal Gating**: High-level deal teasers and anonymized metrics are exposed publicly to buyers, while detailed investor outreach and NDA requests are handled via interactive modals.
+
+---
+
 ## 🤖 AI Tools Used
 
 - **Antigravity AI Agent**: Paired for full-stack scaffolding, Prisma schema modeling, seed data creation, component styling, and automated subagent browser testing.
